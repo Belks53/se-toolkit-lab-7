@@ -62,7 +62,8 @@
                       '#.venv' \
                       '#**/node_modules' \
                       '#*/skills' \
-                      '#tmp'
+                      '#tmp' \
+                      '#instructors/{file-reviews,meetings,scripts}'
                   '';
                   help = "Lint all Markdown files";
                 }
