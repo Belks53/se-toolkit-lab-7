@@ -61,9 +61,11 @@ Complete these steps:
    Already up to date.
    ```
 
+2. [Hard reset the branch `main`](./git-vscode.md#hard-reset-the-branch).
+
 ### Prepare the environment in the `Qwen Code` API repository (REMOTE)
 
-1. To create the [`.env`](./file-formats.md#env) file,
+1. To create [`qwen-code-api/.env.secret`](./qwen-code-api-dotenv-secret.md),
 
    [run in the `VS Code Terminal`](./vs-code.md#run-a-command-in-the-vs-code-terminal):
 
@@ -71,7 +73,7 @@ Complete these steps:
    cp .env.example .env.secret
    ```
 
-2. To open the `.env` file in `nano`,
+2. To open the file in `nano`,
 
    [run in the `VS Code Terminal`](./vs-code.md#run-a-command-in-the-vs-code-terminal):
 
@@ -79,11 +81,20 @@ Complete these steps:
    nano .env.secret
    ```
 
-3. Write an arbitrary value for `QWEN_CODE_API_KEY`.
+3. Set the [`Qwen Code` API key](./qwen-code-api.md#qwen-code-api-key):
 
-   This key will protect your `Qwen Code` API.
+   ```terminal
+   QWEN_CODE_API_KEY=<qwen-code-api-key>
+   ```
 
-4. Save the file (`Ctrl + O`).
+   Replace the placeholder [`<qwen-code-api-key>`](./qwen-code-api.md#qwen-code-api-key-placeholder).
+
+4. To write the changes:
+
+   1. Press `Ctrl+O`.
+   2. Press `Enter`.
+
+5. To close the editor, press `Ctrl+X`.
 
 ### Start the `Qwen Code` API (REMOTE)
 
@@ -97,4 +108,8 @@ Complete these steps:
 
    > <h3>Troubleshooting</h3>
    >
-   > [**`Port conflict (`port is already allocated`)`**](./docker.md#port-conflict-port-is-already-allocated)
+   > [**Port conflict (`port is already allocated`)**](./docker.md#port-conflict-port-is-already-allocated)
+   >
+   > **`network lms-network was found but has incorrect label com.docker.compose.network set to "default" (expected: "lms-network")`**
+   >
+   > 1. [Clean up `Docker`](./docker.md#clean-up-docker).
