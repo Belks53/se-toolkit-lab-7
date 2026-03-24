@@ -76,39 +76,49 @@ async def run_test_command(command: str, config: dict) -> str:
         )
     else:
         # Treat as natural language query
-        return await handle_natural_language(command)
+        return await handle_natural_language(
+            command,
+            config["LMS_API_BASE_URL"],
+            config["LMS_API_KEY"],
+            config["LLM_API_KEY"],
+            config["LLM_API_BASE_URL"],
+            config["LLM_API_MODEL"],
+        )
 
 
 async def run_telegram_bot(config: dict):
     """Run the Telegram bot.
-    
+
     Args:
         config: Configuration dictionary with BOT_TOKEN and other settings
     """
     try:
         from aiogram import Bot, Dispatcher, types
         from aiogram.filters import Command
-    except ImportError:
-        print("Error: aiogram not installed. Run 'uv sync' in the bot directory.")
+        from keyboards import get_quick_actions_keyboard, get_help_keyboard
+    except ImportError as e:
+        print(f"Error: aiogram not installed. Run 'uv sync' in the bot directory. {e}")
         sys.exit(1)
-    
+
     if not config["BOT_TOKEN"]:
         print("Error: BOT_TOKEN not set. Check .env.bot.secret")
         sys.exit(1)
-    
+
     bot = Bot(token=config["BOT_TOKEN"])
     dp = Dispatcher()
-    
+
     # Command handlers
     @dp.message(Command("start"))
     async def cmd_start(message: types.Message):
         response = await handle_start()
-        await message.answer(response)
-    
+        keyboard = get_quick_actions_keyboard()
+        await message.answer(response, reply_markup=keyboard)
+
     @dp.message(Command("help"))
     async def cmd_help(message: types.Message):
         response = await handle_help()
-        await message.answer(response)
+        keyboard = get_help_keyboard()
+        await message.answer(response, reply_markup=keyboard)
     
     @dp.message(Command("health"))
     async def cmd_health(message: types.Message):
@@ -142,7 +152,14 @@ async def run_telegram_bot(config: dict):
     @dp.message()
     async def handle_message(message: types.Message):
         """Handle natural language messages."""
-        response = await handle_natural_language(message.text)
+        response = await handle_natural_language(
+            message.text,
+            config["LMS_API_BASE_URL"],
+            config["LMS_API_KEY"],
+            config["LLM_API_KEY"],
+            config["LLM_API_BASE_URL"],
+            config["LLM_API_MODEL"],
+        )
         await message.answer(response)
     
     # Start polling
