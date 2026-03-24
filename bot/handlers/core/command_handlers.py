@@ -57,13 +57,19 @@ async def handle_health(lms_api_url: str, lms_api_key: str) -> str:
                 timeout=5.0
             )
             if response.status_code == 200:
-                return "✅ Backend is UP and running!"
+                data = response.json()
+                item_count = len(data) if isinstance(data, list) else "unknown"
+                return f"✅ Backend is UP and running! {item_count} items available."
+            elif response.status_code == 502:
+                return f"⚠️ Backend returned status 502 Bad Gateway. The backend service may be down."
             else:
-                return f"⚠️ Backend returned status {response.status_code}"
-    except httpx.ConnectError:
-        return "❌ Backend is DOWN - cannot connect to the LMS API"
+                return f"⚠️ Backend returned status {response.status_code}. Check the backend logs."
+    except httpx.ConnectError as e:
+        return f"❌ Backend connection refused ({lms_api_url}). Check that the services are running."
+    except httpx.ReadTimeout:
+        return f"❌ Backend timed out ({lms_api_url}). The service may be overloaded."
     except Exception as e:
-        return f"❌ Backend error: {str(e)}"
+        return f"❌ Backend error: {str(e)}. Check that the backend is running."
 
 
 async def handle_labs(lms_api_url: str, lms_api_key: str) -> str:
