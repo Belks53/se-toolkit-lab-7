@@ -95,3 +95,65 @@ By the end of this lab, you should be able to say:
 ### Optional
 
 1. [Flutter Web Chatbot](./lab/tasks/optional/task-1.md)
+
+## Deploy
+
+### Prerequisites
+
+Ensure you have the following environment variables configured in `.env.docker.secret` on your VM:
+
+| Variable | Description |
+|----------|-------------|
+| `BOT_TOKEN` | Telegram bot token from @BotFather |
+| `LMS_API_KEY` | API key for the LMS backend |
+| `LLM_API_KEY` | API key for the LLM service |
+| `LLM_API_MODEL` | LLM model name (default: `coder-model`) |
+
+> **Note**: The bot service uses `http://backend:8000` to reach the backend via Docker networking, and `http://host.docker.internal:42005/v1` for the LLM API (since the LLM proxy runs on the host).
+
+### Build and deploy
+
+```bash
+cd ~/se-toolkit-lab-7
+
+# Stop any running bot process (if using nohup)
+pkill -f "bot.py" 2>/dev/null
+
+# Build and start all services
+docker compose --env-file .env.docker.secret up --build -d
+
+# Check all services are running
+docker compose --env-file .env.docker.secret ps
+```
+
+### Verify deployment
+
+```bash
+# Check bot container status
+docker compose --env-file .env.docker.secret ps bot
+
+# View bot logs
+docker compose --env-file .env.docker.secret logs bot --tail 20
+
+# Test backend is still accessible
+curl -sf http://localhost:42002/docs
+```
+
+### Test in Telegram
+
+Send these commands to your bot:
+
+1. `/start` — should receive a welcome message
+2. `/health` — should show backend status
+3. "what labs are available?" — natural language query
+4. "which lab has the lowest pass rate?" — multi-step reasoning
+
+### Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| Bot container restarting | Check logs: `docker compose logs bot` — usually missing env var or import error |
+| `/health` fails | Ensure `LMS_API_BASE_URL=http://backend:8000` (not localhost) |
+| LLM queries fail | `LLM_API_BASE_URL` must use `host.docker.internal` |
+| "BOT_TOKEN is required" | Add `BOT_TOKEN` to `.env.docker.secret` |
+| Build fails at `uv sync` | Ensure `uv.lock` is copied in Dockerfile |
