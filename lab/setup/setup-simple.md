@@ -31,6 +31,9 @@
 > [!TIP]
 > In the instructions below, values you need to replace are marked like this: **`YOUR_VALUE`**. Replace the entire placeholder (including the `<` and `>` if present) with your actual value.
 
+> [!TIP]
+> First ask your [coding agent](#111-coding-agent), then ask the TA.
+
 ### 1.1. Set up your fork
 
 #### 1.1.1. Fork the course instructors' repo
@@ -155,6 +158,12 @@ Replace **`YOUR_VM_USERNAME`** and **`YOUR_VM_IP`** with your values.
 
 > <h3>Troubleshooting</h3>
 >
+> **`=> ERROR [backend builder 6/6] RUN --mount=type=cache,target=/root/.cache/uv     uv sync --  0.3s`**
+>
+> The problem is intentional.
+>
+> Ask your [coding agent](#111-coding-agent) to run the `docker compose` command and debug.
+>
 > **Port conflict (`port is already allocated`).**
 >
 > First, check what's using the port:
@@ -225,8 +234,8 @@ The database starts empty. You need to run the ETL pipeline to populate it with 
 
    ```json
    {
-     "items_loaded": 120,
-     "logs_loaded": 5000
+     "new_records": 120,
+     "total_records": 9502
    }
    ```
 

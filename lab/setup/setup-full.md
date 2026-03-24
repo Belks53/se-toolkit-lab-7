@@ -269,7 +269,7 @@ See [tools](../../wiki/software-types.md#tool).
 ### 1.13. (UPD) Set up the `Qwen Code` API (REMOTE)
 
 1. [Set up the `Qwen Code` API on your VM](../../wiki/qwen-code-api-deployment.md#deploy-the-qwen-code-api-remote).
-2. [Check that the `Qwen Code` is accessible on your local machine (LOCAL)](../../wiki/qwen-code-api.md#check-that-the-qwen-code-api-is-accessible).
+2. [Check that the `Qwen Code` API is accessible on your local machine (LOCAL)](../../wiki/qwen-code-api.md#check-that-the-qwen-code-api-is-accessible).
 
 ### 1.14. Set up the `Telegram` bot
 
