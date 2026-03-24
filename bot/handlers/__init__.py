@@ -4,158 +4,20 @@ Handlers are pure functions that take input and return text.
 They don't know about Telegram - this makes them testable without the Telegram API.
 """
 
+from .command_handlers import (
+    handle_start,
+    handle_help,
+    handle_health,
+    handle_labs,
+    handle_scores,
+    handle_natural_language,
+)
 
-async def handle_start() -> str:
-    """Handle /start command - welcome message."""
-    return (
-        "👋 Welcome to the LMS Bot!\n\n"
-        "I can help you interact with the LMS backend through chat.\n\n"
-        "Available commands:\n"
-        "/start - Welcome message\n"
-        "/help - List all commands\n"
-        "/health - Check backend status\n"
-        "/labs - List available labs\n"
-        "/scores <lab> - Get scores for a lab\n\n"
-        "You can also ask me questions in plain language!"
-    )
-
-
-async def handle_help() -> str:
-    """Handle /help command - list available commands."""
-    return (
-        "📖 Available Commands:\n\n"
-        "/start - Welcome message\n"
-        "/help - Show this help message\n"
-        "/health - Check if the LMS backend is up\n"
-        "/labs - List all available labs\n"
-        "/scores <lab_name> - Get pass rates for a specific lab\n\n"
-        "You can also ask questions in natural language, like:\n"
-        "• 'What labs are available?'\n"
-        "• 'Show me the health status'\n"
-        "• 'What are my scores for lab-04?'"
-    )
-
-
-async def handle_health(lms_api_url: str, lms_api_key: str) -> str:
-    """Handle /health command - check backend status.
-
-    Args:
-        lms_api_url: Base URL of the LMS API
-        lms_api_key: API key for authentication
-
-    Returns:
-        Status message indicating if backend is up or down
-    """
-    import httpx
-
-    try:
-        async with httpx.AsyncClient() as client:
-            # Check if backend is up by trying to access /items/ endpoint
-            response = await client.get(
-                f"{lms_api_url}/items/",
-                headers={"Authorization": f"Bearer {lms_api_key}"},
-                timeout=5.0
-            )
-            if response.status_code == 200:
-                return "✅ Backend is UP and running!"
-            else:
-                return f"⚠️ Backend returned status {response.status_code}"
-    except httpx.ConnectError:
-        return "❌ Backend is DOWN - cannot connect to the LMS API"
-    except Exception as e:
-        return f"❌ Backend error: {str(e)}"
-
-
-async def handle_labs(lms_api_url: str, lms_api_key: str) -> str:
-    """Handle /labs command - list available labs.
-
-    Args:
-        lms_api_url: Base URL of the LMS API
-        lms_api_key: API key for authentication
-
-    Returns:
-        Formatted list of available labs
-    """
-    import httpx
-
-    try:
-        async with httpx.AsyncClient() as client:
-            response = await client.get(
-                f"{lms_api_url}/items/",
-                headers={"Authorization": f"Bearer {lms_api_key}"},
-                timeout=10.0
-            )
-            if response.status_code == 200:
-                items_data = response.json()
-                # Filter for labs (type == "lab")
-                if isinstance(items_data, list):
-                    labs = [item for item in items_data if item.get("type") == "lab"]
-                    if labs:
-                        labs_list = "\n".join([f"• {lab.get('title', lab.get('name', 'Unknown'))}" for lab in labs])
-                        return f"📚 Available Labs:\n\n{labs_list}"
-                    else:
-                        return "📚 No labs available at the moment."
-                else:
-                    return "📚 No labs available at the moment."
-            else:
-                return f"⚠️ Failed to fetch labs (status {response.status_code})"
-    except httpx.ConnectError:
-        return "❌ Cannot connect to backend - is the LMS API running?"
-    except Exception as e:
-        return f"❌ Error fetching labs: {str(e)}"
-
-
-async def handle_scores(lab_name: str, lms_api_url: str, lms_api_key: str) -> str:
-    """Handle /scores command - get scores for a lab.
-
-    Args:
-        lab_name: Name of the lab to get scores for
-        lms_api_url: Base URL of the LMS API
-        lms_api_key: API key for authentication
-
-    Returns:
-        Formatted scores information
-    """
-    import httpx
-
-    try:
-        async with httpx.AsyncClient() as client:
-            # Use the pass-rates endpoint with lab query parameter
-            response = await client.get(
-                f"{lms_api_url}/analytics/pass-rates?lab={lab_name}",
-                headers={"Authorization": f"Bearer {lms_api_key}"},
-                timeout=10.0
-            )
-            if response.status_code == 200:
-                scores_data = response.json()
-                if scores_data:
-                    # Format the pass rates data nicely
-                    lines = []
-                    for task in scores_data:
-                        task_name = task.get("task", "Unknown")
-                        avg_score = task.get("avg_score", 0)
-                        attempts = task.get("attempts", 0)
-                        lines.append(f"• {task_name}: {avg_score}% avg ({attempts} attempts)")
-                    return f"📊 Pass rates for {lab_name}:\n\n" + "\n".join(lines)
-                else:
-                    return f"⚠️ No scores found for '{lab_name}'"
-            else:
-                return f"⚠️ No scores found for '{lab_name}' (status {response.status_code})"
-    except httpx.ConnectError:
-        return "❌ Cannot connect to backend - is the LMS API running?"
-    except Exception as e:
-        return f"❌ Error fetching scores: {str(e)}"
-
-
-async def handle_natural_language(query: str, llm_client=None) -> str:
-    """Handle natural language queries using LLM.
-    
-    Args:
-        query: User's natural language query
-        llm_client: Optional LLM client for processing
-        
-    Returns:
-        Response to the user's query
-    """
-    # Placeholder - will be implemented in Task 3
-    return f"🤔 I received your query: '{query}'\n\nNatural language processing will be implemented in Task 3."
+__all__ = [
+    "handle_start",
+    "handle_help",
+    "handle_health",
+    "handle_labs",
+    "handle_scores",
+    "handle_natural_language",
+]
