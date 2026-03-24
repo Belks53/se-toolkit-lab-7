@@ -153,15 +153,63 @@ async def handle_scores(lab_name: str, lms_api_url: str, lms_api_key: str) -> st
         return f"❌ Error fetching scores: {str(e)}"
 
 
-async def handle_natural_language(query: str, llm_client=None) -> str:
-    """Handle natural language queries using LLM.
-    
+async def handle_natural_language(
+    query: str,
+    lms_api_url: str = "",
+    lms_api_key: str = "",
+    llm_api_key: str = "",
+    llm_api_base_url: str = "",
+    llm_api_model: str = "",
+) -> str:
+    """Handle natural language queries using LLM-powered intent routing.
+
     Args:
         query: User's natural language query
-        llm_client: Optional LLM client for processing
-        
+        lms_api_url: Base URL of the LMS API
+        lms_api_key: API key for authentication
+        llm_api_key: API key for LLM
+        llm_api_base_url: Base URL for LLM API
+        llm_api_model: Model name to use
+
     Returns:
         Response to the user's query
     """
-    # Placeholder - will be implemented in Task 3
-    return f"🤔 I received your query: '{query}'\n\nNatural language processing will be implemented in Task 3."
+    import httpx
+    from openai import AsyncOpenAI
+
+    from services import LMSAPIClient
+    from services.intent_router import IntentRouter
+
+    # Check if LLM is configured
+    if not llm_api_key or not llm_api_base_url or llm_api_key == "<llm-api-key>" or llm_api_base_url == "<llm-api-base-url>":
+        return (
+            f"🤔 I received your query: '{query}'\n\n"
+            "LLM integration is not configured yet. Please set up the LLM API credentials in .env.bot.secret\n\n"
+            "Try these slash commands instead:\n"
+            "/health - Check backend status\n"
+            "/labs - List available labs\n"
+            "/scores <lab> - Get scores for a lab"
+        )
+
+    try:
+        # Initialize clients
+        llm_client = AsyncOpenAI(
+            api_key=llm_api_key,
+            base_url=llm_api_base_url,
+        )
+        lms_client = LMSAPIClient(lms_api_url, lms_api_key)
+
+        # Create intent router and route the query
+        router = IntentRouter(llm_client, lms_client, llm_api_model)
+        response = await router.route(query)
+
+        await lms_client.close()
+        return response
+
+    except httpx.ConnectError:
+        return "❌ Cannot connect to backend - is the LMS API running?"
+    except Exception as e:
+        error_msg = str(e)
+        if "Connection error" in error_msg or "401" in error_msg:
+            return "❌ LLM connection error. The Qwen Code API may need to be restarted. Try: `cd ~/qwen-code-oai-proxy && docker compose restart`"
+        return f"❌ LLM error: {error_msg}"
